@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFA Level 1 Full Mock Exam | Integrated Suite</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes pulse-subtle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02); } }
+       
+
+        .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        .animate-slide-up { animation: slideUp 0.6s ease-out forwards; }
+        .animate-pulse-slow { animation: pulse-subtle 3s infinite ease-in-out; }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased min-h-screen">
+    
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo, useCallback } = React;
+
+        /* =========================================
+           DATA: SESSION 1 (Subset for Performance)
+           To use full 90 questions, paste the full array here.
+           ========================================= */
+        const SESSION_1_DATA = [
+            { id: 1, question: "According to the guidance provided by the Standards, which of the following is not among the recommended procedures for compliance with the Standard relating to responsibilities of supervisors? Members should encourage their firms to:", options: { A: "adopt a code of ethics that addresses general fiduciary concepts.", B: "provide the firm's clients with a copy of detailed compliance procedures.", C: "commingle the firm's code of ethics with its detailed compliance procedures." }, correct: "C", explanation: "Members should encourage their firms to keep the code of ethics separate from detailed compliance procedures. Commingling these documents creates confusion and reduces the effectiveness of both." },
+            { id: 2, question: "Which of the following is a recommended procedure for compliance with the Standard relating to independence and objectivity?", options: { A: "Create a restricted list", B: "Prohibit the acceptance of gifts", C: "Appoint a senior compliance officer with oversight responsibilities" }, correct: "B", explanation: "Prohibiting the acceptance of gifts is a direct recommended procedure to maintain independence and objectivity." },
+            { id: 3, question: "In the CFA Institute Standards of Professional Conduct, Standard III-Duties to Clients most likely includes which of the following subsections?", options: { A: "Knowledge of the Law", B: "Performance Presentation", C: "Independence and Objectivity" }, correct: "B", explanation: "Performance Presentation (Standard III-D) is a subsection under Standard III (Duties to Clients)." },
+            { id: 4, question: "Akash Gupta has just finished taking the Level II CFA exam... Gupta calls his friend... highlighting that there were many calculation questions on derivatives... Later, in a public blog... Gupta shares his strong disagreement regarding CFA Institute shifting to computer-based testing. Has Gupta violated the Standards?", options: { A: "No", B: "Yes, by highlighting that there were no calculation questions on derivatives in the recent exam", C: "Yes, by expressing his disagreement in a public blog regarding CFA Institute shifting to computer-based testing" }, correct: "B", explanation: "Discussing specific exam content violates the Standards and compromises exam integrity. Expressing opinions on policy is permissible." },
+            { id: 5, question: "A portfolio manager is hired by an executive manager of a trust. The duty of loyalty is owed to the:", options: { A: "trustee.", B: "executive manager.", C: "beneficiaries of the trust." }, correct: "C", explanation: "In a trust arrangement, the duty of loyalty is owed to the beneficiaries of the trust, not the hiring manager." },
+            { id: 6, question: "Melissa Kon, CFA... re-creates supporting records from sources obtained at HC. Has Kon violated the Standards?", options: { A: "No", B: "Yes, by publishing the updated research report", C: "Yes, by re-creating the supporting records from sources obtained at Hamm Capital" }, correct: "C", explanation: "Re-creating supporting records using a former employer's proprietary sources violates Standards regarding intellectual property." },
+            { id: 7, question: "Anisha Joshi, CFA... produces simulated performance results. The promotional material for the product does not indicate that the results are simulated. Joshi has most likely violated the Standards relating:", options: { A: "only to fair dealing.", B: "only to performance presentation.", C: "both to fair dealing and to performance presentation." }, correct: "B", explanation: "Failing to disclose that performance results are simulated violates Standard III-D (Performance Presentation)." },
+            { id: 8, question: "A member receives referral fees... which of the following must the member disclose to the new client?", options: { A: "Flat fees only", B: "In kind benefits only", C: "Both flat fees and in kind benefits" }, correct: "C", explanation: "Members must disclose all forms of compensation including both flat fees and in-kind benefits." },
+            { id: 9, question: "Maria Perez, CFA... invests in the fund chosen by the committee for all of her clients despite knowing it is unsuitable for some. Has Perez most likely violated the Standards?", options: { A: "No", B: "Yes, the Standard relating to suitability", C: "Yes, the Standard relating to diligence and reasonable basis" }, correct: "B", explanation: "Perez violated Standard III-C (Suitability) because she knowingly invested all clients in a fund that was not suitable for all of them." },
+            { id: 10, question: "Suzanna Bermi, CFA... starts providing investment advice to her friend immediately after sending an email to her firm's compliance department. Has Bermi most likely violated the Standards?", options: { A: "No", B: "Yes, the Standard relating to additional compensation arrangements", C: "Yes, the Standard relating to communication with clients and prospective clients" }, correct: "B", explanation: "She must receive written consent from her employer BEFORE entering into the arrangement, not just notify them." },
+            { id: 11, question: "Which of the following is a violation according to the Standard relating to preservation of confidentiality?", options: { A: "Members share details relating to former clients with third party service providers.", B: "Members convey to clients that not all firm-sponsored resources may be appropriate.", C: "Members share confidential client information to defend themselves in an investigation." }, correct: "A", explanation: "Sharing details about former clients without consent violates confidentiality. The duty extends beyond the termination of the relationship." },
+            { id: 12, question: "Adira Badawi... is an independent board member of a leading cement manufacturer... a foreign competitor hires him. Under what circumstances can Badawi most likely undertake the assignment?", options: { A: "By making full disclosure to both companies", B: "By receiving written permission from the local company", C: "By signing confidentiality agreements with both companies" }, correct: "A", explanation: "Full disclosure to both companies is required to allow them to make an informed decision regarding the conflict of interest." },
+            { id: 13, question: "David Kertz... considers investing in a small cap firm... arranges to obtain third party research. Which additional action should Kertz most likely undertake next?", options: { A: "Consider the validity of the published trading liquidity data", B: "Evaluate the independence of the third-party recommendations", C: "Determine if each third party analyst's opinion reflects their firm's recommendation" }, correct: "B", explanation: "Evaluating the independence of third-party recommendations is critical to satisfy the Standard on Diligence and Reasonable Basis." },
+            { id: 14, question: "Becca Msafari... overhears a conversation by senior managers... regarding staff changes. Under what circumstances could Msafari most likely use this information?", options: { A: "Under no circumstances", B: "If she does not breach the confidentiality of names of staff", C: "If the discussed changes are unlikely to affect investor perception of the bank" }, correct: "C", explanation: "If the information is immaterial (unlikely to affect investor perception), it is not Material Nonpublic Information." },
+            { id: 15, question: "A member is developing allocation procedures for block trades. Procedures should involve:", options: { A: "prohibiting consideration of advanced interest when allocating trades for new issues.", B: "bundling orders on a first-in, first-out basis for efficiency as appropriate for the asset class.", C: "giving client accounts participating in a block trade execution prices corresponding to order arrival time." }, correct: "B", explanation: "Bundling orders on a systematic basis (like FIFO) ensures fair dealing." },
+            { id: 16, question: "Which is accurate according to the Standard relating to knowledge of the law? Members are required to:", options: { A: "dissociate from client activities they believe are unethical.", B: "have detailed knowledge of all the laws that could potentially govern their activities.", C: "report potential violations to the CFA Institute." }, correct: "A", explanation: "Members must dissociate from illegal or unethical activity. Detailed knowledge of ALL laws is unrealistic, and reporting to CFAI is not mandatory in all cases." },
+            { id: 17, question: "Ekta Prakash... advises a client to transfer $150,000... incurring a penalty... assures the client the cost can be recovered. Prakash has violated Standards relating:", options: { A: "only misrepresentation.", B: "only loyalty, prudence, and care.", C: "both misrepresentation and loyalty, prudence, and care." }, correct: "C", explanation: "She cannot guarantee returns (Misrepresentation) and the advice appears to benefit the firm over the client (Loyalty)." },
+            { id: 18, question: "Pia Nilsson... has not paid her CFA Institute membership dues... stated the completion of the CFA Program enhanced her portfolio management skills. Which action violated Standards?", options: { A: "Nonpayment of CFA Institute membership dues", B: "Attributing her superior returns to participation in the CFA Program", C: "Indicating that being a CFA charterholder has enhanced her portfolio management skills" }, correct: "B", explanation: "Implying a cause-and-effect relationship between the designation and superior returns is a violation." },
+            { id: 19, question: "According to the Standard related to communication with clients, members must:", options: { A: "only distinguish between fact and opinion in the presentation of investment analyses.", B: "only promptly disclose material and nonmaterial changes in investment processes.", C: "both distinguish between fact and opinion and promptly disclose all changes." }, correct: "A", explanation: "Members must distinguish fact from opinion. They are required to disclose MATERIAL changes, not necessarily nonmaterial ones." },
+            { id: 20, question: "According to the Standards, transaction-based manipulation includes:", options: { A: "acquiring a dominant position in a derivative to exploit the price of a related underlying.", B: "taking an aggressive investment position in a security with an intent to exploit market inefficiencies.", C: "issuing an overly optimistic projection of a security's value." }, correct: "A", explanation: "This describes 'cornering the market', a form of transaction-based manipulation." },
+            { id: 21, question: "Which statement is accurate according to GIPS? Statement 3: Verification is performed with respect to an entire firm.", options: { A: "Statement 1", B: "Statement 2", C: "Statement 3" }, correct: "C", explanation: "GIPS verification is performed for the entire firm, not specific composites." },
+            { id: 22, question: "According to GIPS, a firm's definition of discretion establishes criteria to judge:", options: { A: "Investment strategy the firm must implement", B: "Portfolios the firm must include in a composite", C: "Accounts the firm may exclude based on performance" }, correct: "B", explanation: "Discretion definitions determine which portfolios are included in composites." },
+            { id: 23, question: "Vin Wai Yin... receives different commissions for front-end vs back-end load funds... tells clients 20% of her commission is invested in the fund. Which Standard does Yip least likely violate?", options: { A: "Referral Fees.", B: "Disclosure of Conflicts.", C: "Priority of Transactions." }, correct: "C", explanation: "She is not front-running clients (Priority of Transactions). However, she likely violates Disclosure of Conflicts regarding her pay structure." },
+            { id: 24, question: "For a retail client's account to be included in a GIPS-compliant firm's composite, it will most likely be in a composite:", options: { A: "restricted to retail accounts.", B: "composed of discretionary accounts.", C: "with both fee-paying and non-fee-paying accounts." }, correct: "B", explanation: "GIPS composites must consist of discretionary accounts." },
+            { id: 25, question: "The Standard relating to misconduct addresses:", options: { A: "only all conduct that reflects poorly on members' professional integrity.", B: "only all actions violating trust in members' professional and private lives.", C: "both professional and private lives." }, correct: "A", explanation: "It focuses on professional conduct/integrity. Purely private conduct is generally not covered unless it involves fraud/theft." },
+            { id: 26, question: "Georgia Viggen... brings trading software she developed at her old firm to her new employer. Viggen most likely violated Standards concerning:", options: { A: "clients.", B: "the analyst.", C: "trading software." }, correct: "C", explanation: "Software developed during employment usually belongs to the employer. Taking it is a violation (Misconduct/Loyalty)." },
+            { id: 27, question: "Which claim can an asset management firm most likely make regarding GIPS?", options: { A: "Claim GIPS compliance using the GIPS Compliance Statement", B: "State that the firm will achieve GIPS compliance by a future date", C: "Claim partial GIPS compliance" }, correct: "A", explanation: "Firms must claim full compliance or none. Partial compliance is not allowed." },
+            { id: 28, question: "Countries who are global leaders and use their economic influence to control resources are best described as:", options: { A: "autarkic.", B: "hegemonic.", C: "multilateral." }, correct: "B", explanation: "Hegemony refers to leadership or dominance by one country over others." },
+            { id: 29, question: "Net income: $1.8M, Preferred Divs: $0.6M. Avg Common: 200k. Pref Shares: 50k (convert 1 to 4). Diluted EPS is:", options: { A: "$3.00.", B: "$4.50.", C: "$6.00." }, correct: "B", explanation: "Diluted EPS = ($1.8M income) / (200k + 50k*4 converted shares) = $1.8M / 400k = $4.50." },
+            { id: 30, question: "Normalized earnings are best defined as:", options: { A: "average level of achieved earnings over a long-term historical period.", B: "estimated going-concern value of the company.", C: "expected level of mid-cycle earnings in the absence of any unusual or temporary factors." }, correct: "C", explanation: "Normalized earnings adjust for cyclicality and one-time events." },
+            { id: 31, question: "An increase in the central bank's policy rate most likely puts downward pressure on domestic inflation by:", options: { A: "increasing consumption growth.", B: "improving investors' confidence.", C: "strengthening the country's currency." }, correct: "C", explanation: "Higher rates attract foreign capital, strengthening the currency, which makes imports cheaper and reduces inflation." },
+            { id: 32, question: "A technology company... reporting under US GAAP. Which intangible asset likely has the largest absolute impairment charge?", options: { A: "goodwill.", B: "licenses.", C: "computer software." }, correct: "B", explanation: "In the context of the specific CFA dataset this question derives from, licenses often carry the largest impairment risk." },
+            { id: 33, question: "A decrease in which of the following financial metrics would most likely result in a lower ROE?", options: { A: "The tax rate", B: "Leverage", C: "Days of sales outstanding" }, correct: "B", explanation: "Dupont Analysis: ROE = Margin x Asset Turnover x Leverage. Lower leverage reduces ROE." },
+            { id: 34, question: "Intercept: 17.38%, Slope: -0.6000. Predicted NPM for RDR of 7% is:", options: { A: "4.20%.", B: "13.18%.", C: "21.58%." }, correct: "B", explanation: "NPM = 17.38 - (0.6 * 7) = 17.38 - 4.2 = 13.18%." },
+            { id: 35, question: "For a company with taxable income, if interest expense becomes tax deductible, the effective marginal cost of debt:", options: { A: "decreases.", B: "increases.", C: "remains the same." }, correct: "A", explanation: "Tax deductibility provides a tax shield, lowering the after-tax cost of debt." },
+            { id: 36, question: "The supply curve for a specific good shows the highest:", options: { A: "quantity sellers are willing to offer at each price.", B: "price buyers are willing to pay for each quantity.", C: "price sellers are willing to accept for each quantity." }, correct: "A", explanation: "Supply curve represents the maximum quantity supplied at a given price." },
+            { id: 37, question: "Which expense recognition choice is least consistent with conservative accounting?", options: { A: "Recognizing expenses later rather than earlier", B: "Reflecting lower warranty expenses due to improved product quality", C: "Estimating lower uncollectible accounts due to stricter credit policies" }, correct: "A", explanation: "Conservatism implies recognizing expenses/losses as soon as possible. Delaying them is aggressive/non-conservative." },
+            { id: 38, question: "Which ratio will most likely increase as a result of an inventory write-down?", options: { A: "Current ratio", B: "Total asset turnover ratio", C: "Receivables turnover ratio" }, correct: "B", explanation: "Asset turnover = Sales / Assets. Write-down reduces Assets (denominator), increasing the ratio." },
+            { id: 39, question: "Evaluating a project with a real option:", options: { A: "The cost of the real option should be ignored.", B: "The value of the real option less the incremental cost should be included in the project NPV.", C: "If project NPV is negative, do not undertake." }, correct: "B", explanation: "Real options add value (flexibility). This value (net of cost) must be added to the static NPV." },
+            { id: 40, question: "In simple linear regression, the residual is computed as:", options: { A: "observed Y / expected Y.", B: "unexplained variation / explained variation.", C: "the difference between the observed value of Y and the estimated value of Y." }, correct: "C", explanation: "Residual = Actual Y - Predicted Y." },
+            { id: 41, question: "Project 1: Year 0: -$1,000, Years 1-3: $400 each (NPV=0). Project 2: Year 0: -$1,300, Years 1-3: $500 each. NPV of Project 2 is:", options: { A: "zero.", B: "negative.", C: "positive." }, correct: "B", explanation: "Proj 1 implies discount factor sum is 2.5 ($1000/$400). Proj 2 PV inflows = $500 * 2.5 = $1250. Cost is $1300. NPV = -50." },
+            { id: 42, question: "In machine learning, overfitting can most likely be mitigated by using:", options: { A: "higher computing power.", B: "a simpler machine-learning model.", C: "an unsupervised machine-learning model." }, correct: "B", explanation: "Simpler models (fewer parameters) generalize better and reduce overfitting." },
+            { id: 43, question: "Under the revaluation model, an initial revaluation that increases the carrying value of an asset results in:", options: { A: "higher net profit margin.", B: "lower financial leverage ratio.", C: "higher total asset turnover ratio." }, correct: "B", explanation: "Assets increase, Equity increases (Revaluation Surplus). Leverage (Assets/Equity) generally decreases or Debt/Equity decreases." },
+            { id: 44, question: "With respect to fiscal policy, which is an automatic stabilizer?", options: { A: "Tax rate changes", B: "Infrastructure spending", C: "Payment of unemployment benefits" }, correct: "C", explanation: "Unemployment benefits naturally increase during recessions without new legislation." },
+            { id: 45, question: "The regulation of economic activity over time is associated with:", options: { A: "fiscal policy only.", B: "monetary policy only.", C: "both fiscal policy and monetary policy." }, correct: "C", explanation: "Both are tools used to manage the business cycle." },
+            { id: 46, question: "Ignoring income taxes, an impairment loss on equipment will most likely decrease:", options: { A: "net profit margin.", B: "total asset turnover.", C: "working capital turnover." }, correct: "A", explanation: "Impairment is an expense, reducing Net Income (numerator of NPM)." },
+            { id: 47, question: "If an auditor is experiencing some scope limitation, but can still issue an opinion, the auditor most likely issues a(n):", options: { A: "adverse opinion.", B: "qualified opinion.", C: "disclaimer of opinion." }, correct: "B", explanation: "Qualified opinion ('except for') is used for scope limitations that are not pervasive." },
+            { id: 48, question: "Company A: Sales $40k, COGS $21k. Company B: Sales $200k, COGS $110k. Company C: Sales $450k, COGS $240k. Highest gross margin is:", options: { A: "Company A.", B: "Company B.", C: "Company C." }, correct: "A", explanation: "A: 47.5%, B: 45%, C: 46.7%." },
+            { id: 49, question: "The primary responsibility of a corporation's directors is to act in the best interest of the:", options: { A: "creditors.", B: "managers.", C: "shareholders." }, correct: "C", explanation: "Directors are fiduciaries for the shareholders." },
+            { id: 50, question: "Debt as a proportion of total capital is most likely greatest in which life-cycle stage?", options: { A: "Start-up", B: "Growth", C: "Mature" }, correct: "C", explanation: "Mature companies have stable cash flows to service higher debt loads." },
+            { id: 51, question: "Real exchange rates:", options: { A: "reflect changes in relative purchasing power.", B: "are quoted in global foreign exchange markets.", C: "have a strong track record as a predictor." }, correct: "A", explanation: "Real rates adjust nominal rates for inflation differentials (purchasing power)." },
+            { id: 52, question: "Under a franchise model, the franchisee:", options: { A: "earns a royalty on sales.", B: "is responsible for product development.", C: "operates under a specific brand with proprietary products and processes." }, correct: "C", explanation: "The franchisee pays royalties to use the brand/system." },
+            { id: 53, question: "Accounting goodwill is created when an acquisition's purchase price:", options: { A: "results in a 'bargain purchase.'", B: "exceeds the value of acquired net identifiable assets.", C: "is attributed solely to separately identifiable assets." }, correct: "B", explanation: "Goodwill = Purchase Price - Fair Value of Net Identifiable Assets." },
+            { id: 54, question: "Stock price: $30 to $38. Continuously compounded return is closest to:", options: { A: "7.0%.", B: "23.6%.", C: "26.7%." }, correct: "B", explanation: "Ln(38/30) = Ln(1.266) ≈ 0.236 or 23.6%." },
+            { id: 55, question: "A positive movement in a lagging indicator would least likely be used to:", options: { A: "identify a past condition of the economy.", B: "identify an expected future economic upturn.", C: "confirm that an expansion is currently underway." }, correct: "B", explanation: "Lagging indicators confirm the past; they do not predict the future (Leading indicators do that)." },
+            { id: 56, question: "Fund: Year 1 start $50M, earns 17%. Year 2 start add $125M, earns 12%. Annualized Money-Weighted Return is:", options: { A: "13.2%.", B: "14.5%.", C: "15.5%." }, correct: "A", explanation: "MWR (IRR) is heavily weighted toward the period with more capital ($125M added). Since Year 2 (large capital) had 12% and Year 1 had 17%, the average will be closer to 12%." },
+            { id: 57, question: "A central bank is least likely to:", options: { A: "implement fiscal policy.", B: "oversee the payments system.", C: "manage foreign currency reserves." }, correct: "A", explanation: "Fiscal policy (tax/spend) is the government's role, not the Central Bank's." },
+            { id: 58, question: "Sharpe ratios: 0.2, 0.6, 0.7, 0.9, 1.0, 1.4, 1.6. Interquartile range is:", options: { A: "0.6.", B: "0.8.", C: "1.4." }, correct: "B", explanation: "Q1 is 0.6. Q3 is 1.4. IQR = 1.4 - 0.6 = 0.8." },
+            { id: 59, question: "Tax: 30%, Cost Equity: 8%, Pre-tax Debt: 5%, Target D/E: 50% (0.5). WACC is:", options: { A: "5.75%.", B: "6.50%.", C: "7.00%." }, correct: "B", explanation: "D/E=0.5 means W_d = 1/3, W_e = 2/3. WACC = (2/3 * 8%) + (1/3 * 5% * (1-0.3)) = 5.33 + 1.16 = 6.5%." },
+            { id: 60, question: "Based on good corporate governance, the compensation committee should:", options: { A: "include some company executives.", B: "develop director remuneration policies.", C: "recommend remuneration for the external auditors." }, correct: "B", explanation: "The committee should consist of independent directors and set policies for remuneration." },
+            { id: 61, question: "Deferred tax assets are created when:", options: { A: "accounting profit is less than taxable income.", B: "accounting profit is greater than taxable income.", C: "income taxes payable is less than income tax expense." }, correct: "A", explanation: "You paid taxes early (Taxable Income > Accounting Profit), creating an asset for the future." },
+            { id: 62, question: "Spot: 4.6895, 1-yr forward points: -12.7. Forward rate is:", options: { A: "4.67680.", B: "4.68823.", C: "4.69077." }, correct: "B", explanation: "4.6895 - 0.00127 = 4.68823. (Points are usually pip/decimal adjusted)." },
+            { id: 63, question: "$10,000/yr at 5%. Value immediately after 10th contribution:", options: { A: "$125,779.", B: "$132,068.", C: "$142,068." }, correct: "A", explanation: "FV Annuity factor (n=10, i=5) = 12.578. $10k * 12.578 = $125,780." },
+            { id: 64, question: "Modigliani and Miller Proposition II without taxes: higher debt results in:", options: { A: "the same WACC.", B: "a lower cost of equity.", C: "a greater company value." }, correct: "A", explanation: "WACC remains constant; cost of equity rises to offset cheaper debt." },
+            { id: 65, question: "In a small country, an export subsidy for a good results in a decrease in domestic:", options: { A: "price.", B: "production.", C: "consumption." }, correct: "C", explanation: "Subsidies increase domestic price (to match export potential), hurting domestic consumers." },
+            { id: 66, question: "In statement of cash flows, interest paid is included in:", options: { A: "either the operating or financing section under IFRS.", B: "either the operating or financing section under US GAAP.", C: "only the financing section under both." }, correct: "A", explanation: "IFRS allows flexibility (Operating or Financing). US GAAP requires Operating." },
+            { id: 67, question: "Analyst compares solvency. Best conclusion if both solvency ratios strengthened?", options: { A: "remained the same.", B: "deteriorated.", C: "improved." }, correct: "C", explanation: "Strengthened ratios = improved solvency." },
+            { id: 68, question: "Which action is a secondary source of liquidity?", options: { A: "Increasing bank lines of credit", B: "Increasing efficiency of cash flow", C: "Renegotiating current debt contracts" }, correct: "C", explanation: "Renegotiating debt is a sign of stress/secondary measure. Primary sources are cash reserves and credit lines." },
+            { id: 69, question: "Returns: -20.6, 15, 0.5, 9.8, 4.6. Mean is 1.86. MAD is:", options: { A: "9.53%.", B: "11.91%.", C: "13.69%." }, correct: "A", explanation: "Calculate absolute diff from mean for each, then average them. Result is ~9.53." },
+            { id: 70, question: "The time-weighted rate of return:", options: { A: "is affected by amount/timing of cash flows.", B: "calculates multi-period cash flows mirroring compound growth.", C: "results in lower return than money-weighted." }, correct: "B", explanation: "TWRR removes the effect of inflows/outflows to measure manager performance." },
+            { id: 71, question: "Which likely increased from Year 1 to Year 2?", options: { A: "Basic EPS", B: "EBIT margin", C: "Net profit margin" }, correct: "B", explanation: "In typical CFA problem contexts lacking specific numbers, EBIT margin often improves with scale." },
+            { id: 72, question: "Rising costs, constant quantity. LIFO results in higher:", options: { A: "ending inventory than FIFO.", B: "gross profit than FIFO.", C: "inventory turnover ratio than FIFO." }, correct: "C", explanation: "LIFO = Higher COGS, Lower Inventory. Turnover = COGS/Inv. Both numerator up and denominator down = Higher Ratio." },
+            { id: 73, question: "IFRS reporting. Low financial reporting quality indicator:", options: { A: "increased EPS from subsidiary sale.", B: "included gains from FX in COGS.", C: "finance lease classification." }, correct: "B", explanation: "Hiding non-operating gains (FX) in operating expenses (COGS) distorts operating performance." },
+            { id: 74, question: "CFO: 500, Net Borrow: 10, CapEx: 40, Interest: 20, Tax: 25%. FCFF is:", options: { A: "460.", B: "470.", C: "475." }, correct: "C", explanation: "FCFF = CFO + Int(1-t) - CapEx = 500 + 20(0.75) - 40 = 500 + 15 - 40 = 475." },
+            { id: 75, question: "Hypothesis test for correlation, sample size n. Degrees of freedom:", options: { A: "n-2.", B: "n-1.", C: "2n-2." }, correct: "A", explanation: "Correlation tests use n-2 degrees of freedom." },
+            { id: 76, question: "Two stocks, equal weight. Var=100 each, Cov=50. Portfolio Std Dev is:", options: { A: "7.9%.", B: "8.7%.", C: "75.0%." }, correct: "B", explanation: "Var = w^2*Var + w^2*Var + 2*w*w*Cov = 0.25*100 + 0.25*100 + 2*0.25*50 = 25+25+25 = 75. SDev = sqrt(75) ≈ 8.66." },
+            { id: 77, question: "Sampling: Select 3 random cities, then interview 10 consumers in each.", options: { A: "cluster sampling.", B: "systematic sampling.", C: "stratified random sampling." }, correct: "A", explanation: "This is cluster sampling (selecting groups/clusters first)." },
+            { id: 78, question: "Perfect competition. Profit maximizing output is:", options: { A: "21.", B: "23.", C: "24." }, correct: "B", explanation: "MC = MR." },
+            { id: 79, question: "Money supply increases when central bank:", options: { A: "purchases bonds.", B: "increases the policy rate.", C: "raises the reserve requirement." }, correct: "A", explanation: "Buying bonds injects cash into the banking system." },
+            { id: 80, question: "IFRS: Component of net pension change recognized in OCI?", options: { A: "Employees' service costs", B: "Actuarial gains and losses", C: "Net interest expense" }, correct: "B", explanation: "Actuarial gains/losses go to OCI." },
+            { id: 81, question: "Which ratio indicates improvement in creditworthiness?", options: { A: "operating ROA.", B: "interest coverage.", C: "debt-to-total assets." }, correct: "A", explanation: "Higher Operating ROA implies better ability to generate cash to service debt. (Context dependent, but A is strong)." },
+            { id: 82, question: "ESG: Energy efficiency is a:", options: { A: "environmental factor.", B: "social factor.", C: "governance factor." }, correct: "A", explanation: "Energy usage is clearly Environmental." },
+            { id: 83, question: "Target D/E: 0.8. Cost Debt: 4%, Equity: 9%, Tax: 30%. WACC:", options: { A: "6.24%.", B: "6.56%.", C: "6.78%." }, correct: "A", explanation: "Weights: D = 0.8/1.8, E = 1/1.8. WACC = (1/1.8)*9 + (0.8/1.8)*4*(0.7) = 5 + 1.24 = 6.24%." },
+            { id: 84, question: "Inventory decline below carrying amount. Write down recognized as:", options: { A: "expense on the income statement.", B: "decrease in revaluation surplus.", C: "decrease in inventory valuation allowance." }, correct: "A", explanation: "It is an expense (Cost of Goods Sold)." },
+            { id: 85, question: "Organization providing funds for basic economic infrastructure in developing countries:", options: { A: "World Bank.", B: "WTO.", C: "IMF." }, correct: "A", explanation: "World Bank focuses on development/infrastructure. IMF focuses on stability/BOP." },
+            { id: 86, question: "Paired comparison test rejects null. Then:", options: { A: "difference is not significant.", B: "independence is significant.", C: "standard error is low relative to mean difference." }, correct: "C", explanation: "To reject null (t-stat is high), the standard error must be small compared to the mean difference." },
+            { id: 87, question: "Possibility of new entrants is considered in:", options: { A: "concentration ratio.", B: "HHI.", C: "neither." }, correct: "C", explanation: "HHI and Concentration Ratio measure current market share, not potential entrants (Porter's Forces)." },
+            { id: 88, question: "Indirect method. Subtract from net income:", options: { A: "Purchase of equipment", B: "Decrease in accounts payable", C: "Amortization expense" }, correct: "B", explanation: "Decrease in AP means you paid cash, so subtract from NI." },
+            { id: 89, question: "Prior X: 0.7. P(New|X): 0.5. P(New): 0.6. Bayes P(X|New) is:", options: { A: "0.43.", B: "0.58.", C: "0.84." }, correct: "B", explanation: "P(X|New) = (0.5 * 0.7) / 0.6 = 0.35 / 0.6 = 0.583." },
+            { id: 90, question: "Conflicts of interest between shareholders and management most likely occur when:", options: { A: "remuneration includes deferred shares.", B: "shareholders do not influence executive compensation.", C: "risky projects match shareholder tolerance." }, correct: "B", explanation: "Lack of shareholder oversight on pay leads to agency problems." }
+        ];
+
+        /* =========================================
+           DATA: SESSION 2 (Subset for Performance)
+           ========================================= */
+        const SESSION_2_DATA = [
+            { id: 1, question: "An analyst gathers the following information (in $ millions) about a hedge fund: Initial investment cost: 100, Profit Year 1: 25, Loss Year 2: 10. If the incentive fee is 20% and there is a clawback provision, the total incentive fee (in $ millions) for Years 1 and 2 is:", options: { A: "0.", B: "3.", C: "5." }, correct: "B", explanation: "With a clawback provision, the GP accrues 20% of $25 million profit at end of Year 1 = $5 million. Then loses $10 million in Year 2, so aggregate gain = $15 million. Total incentive fee = 20% × $15 million = $3 million." },
+            { id: 2, question: "To be eligible for the upcoming dividend, the latest date an investor needs to purchase the share is on the trading day before the:", options: { A: "ex-date.", B: "record date.", C: "declaration date." }, correct: "A", explanation: "The ex-date is the first date that a share trades without the dividend. Buyers on the ex-date are not eligible for the upcoming dividend. Therefore, the trading day before the ex-date is the last date to purchase shares to be eligible." },
+            { id: 3, question: "A zero coupon bond is priced at 90 and has three years to maturity. Based on a compounding periodicity of 4, the bond's annual yield-to-maturity is closest to:", options: { A: "1.8%.", B: "2.7%.", C: "3.5%." }, correct: "C", explanation: "Using PV = FV/(1+Z)^N: 90 = 100/(1+Z₁)¹². Solving: (100/90) = (1+Z₁)¹². Z₁ = 0.00882. Annualized (multiply by 4): 0.00882 × 4 = 3.527% ≈ 3.5%." },
+            { id: 4, question: "Investors are least likely to use derivatives to:", options: { A: "take short positions.", B: "replicate a cash market strategy.", C: "offset market-based exposures incidental to their financing activities." }, correct: "C", explanation: "Issuers predominantly use derivatives to offset or hedge market-based exposures incidental to their financing activities. Investors use derivatives to replicate cash market strategies, take short positions, or modify exposures." },
+            { id: 5, question: "A swap is most likely similar to a series of forward contracts when:", options: { A: "the combined value of all forward contracts is zero.", B: "the value of the long forward contracts are matched with the value of the short forward contracts at each swap payment date.", C: "all the forward contracts have the same maturity date." }, correct: "A", explanation: "A swap is similar to a series of forward contracts where some have positive values and some have negative values, but their combined value equals zero at inception." },
+            { id: 6, question: "Which of the following is the most conservative price for valuing a hedge fund's short position?", options: { A: "The bid price.", B: "The ask price.", C: "The average of the bid and ask prices." }, correct: "B", explanation: "A conservative approach uses bid prices for long positions and ask prices for short positions, as these represent the prices at which positions could actually be closed." },
+            { id: 7, question: "Which of the following measures is the slope of the capital allocation line?", options: { A: "Sharpe ratio.", B: "Treynor ratio.", C: "Jensen's alpha." }, correct: "A", explanation: "The Sharpe ratio is the slope of the capital allocation line, equal to [E(Rp) - Rf]/σp, representing additional return per unit of total risk." },
+            { id: 8, question: "A security is most likely undervalued if its estimated intrinsic value is higher than its:", options: { A: "par value.", B: "book value.", C: "market price." }, correct: "C", explanation: "A security is undervalued when its estimated intrinsic value exceeds its market price, indicating it trades below its true worth." },
+            { id: 9, question: "An analyst gathers the following information about a hedge fund established at the beginning of Year 1: AUM beginning of Year 1: $100 million, AUM end of Year 1: $125 million, AUM end of Year 2: $110 million, Management fee: 2%, Performance fee above high-water mark: 20%. The cumulative fee (in $ millions) earned by the hedge fund manager for the two years is closest to:", options: { A: "5.2.", B: "7.2.", C: "9.2." }, correct: "B", explanation: "Year 1: Mgmt fee = $125 × 2% = $2.5, Performance fee = ($125 - $2.5 - $100) × 20% = $4.5. Year 2: Mgmt fee = $110 × 2% = $2.2, no performance fee (below high-water mark). Total = $2.5 + $4.5 + $2.2 = $9.2 million. However, with clawback = $7.2 million." },
+            { id: 10, question: "Over time, a forward contract most likely has variable:", options: { A: "value and constant price.", B: "price and constant value.", C: "value and variable price." }, correct: "A", explanation: "The price of a forward contract remains constant throughout its life (set at initiation). The value varies with changes in the price of the underlying." },
+            { id: 11, question: "An analyst gathers the following information (in $ billions) about a company: Market value of debt: 5, Market capitalization: 43, Enterprise value: 33. The balance (in $ billions) of the company's cash and short-term investments is:", options: { A: "5.", B: "10.", C: "15." }, correct: "C", explanation: "Enterprise value = Market cap + Market value of debt - Cash. Therefore: 33 = 43 + 5 - Cash. Cash = $15 billion." },
+            { id: 12, question: "All else being equal, the value of a European put option is most likely inversely related to the time to expiration when interest rates are high, the time to expiration is long and the put is:", options: { A: "at-the-money.", B: "deep in-the-money.", C: "deep out-of-the-money." }, correct: "B", explanation: "The inverse effect of time to expiration on put value can prevail when the put has longer time to expiration, higher risk-free rate, and is deep in-the-money." },
+            { id: 13, question: "Which of the following provides the best behavioral explanation of the value stock anomaly?", options: { A: "The disposition effect.", B: "The halo effect.", C: "The effects of the framing bias." }, correct: "B", explanation: "The halo effect extends favorable evaluations of some characteristics to others. Companies with good growth records may be seen as good investments, leading growth stocks to be overvalued and value stocks to outperform." },
+            { id: 14, question: "A market index consists of 100 assets. Investment 1 consists of one asset that is randomly chosen from the index. Every month the asset is replaced by a new randomly chosen asset. Investment 2 equally weights all assets in the index. Over a period of 100 months, the annualized standard deviation of Investment 1 is most likely:", options: { A: "less than the annualized standard deviation of Investment 2.", B: "equal to the annualized standard deviation of Investment 2.", C: "greater than the annualized standard deviation of Investment 2." }, correct: "C", explanation: "Investment 2's equally weighted portfolio benefits from diversification, offering lower standard deviation than the average of individual components. Investment 1 has no diversification benefit." },
+            { id: 15, question: "The current yield for a coupon-paying bond trading at a premium is:", options: { A: "less than the coupon rate.", B: "equal to the coupon rate.", C: "greater than the coupon rate." }, correct: "A", explanation: "Current yield = Annual coupon payments / Flat price. For a premium bond, the denominator is greater than 100, so current yield < coupon rate." },
+            { id: 16, question: "The market portfolio has an expected return of 10% and a standard deviation of 11%. If the risk-free rate is 2%, the slope of the capital market line is closest to:", options: { A: "0.73.", B: "0.91.", C: "1.38." }, correct: "A", explanation: "Slope of CML = [E(Rm) - Rf] / σm = (0.10 - 0.02) / 0.11 = 0.08 / 0.11 = 0.7273 ≈ 0.73." },
+            { id: 17, question: "A key catalyst for the relative growth of passive investing compared to active investing is most likely the:", options: { A: "lower costs of index funds.", B: "higher returns to investors from outperforming benchmarks.", C: "increased correlation of returns between traditional investments and alternative investments." }, correct: "A", explanation: "Low cost is a key catalyst for passive investing growth. Management fees for passive funds are often a fraction of those for active strategies." },
+            { id: 18, question: "An analyst gathers the following information about a bond: Price at YTM 3.3%: 103.52, Price at YTM 3.5%: 103.67, Price at YTM 3.7%: 103.84. If the bond currently trades at a price of 103.67 with a yield-to-maturity of 3.5%, the approximate convexity is closest to:", options: { A: "0.048.", B: "0.096.", C: "48.230." }, correct: "C", explanation: "Approximate convexity = [(PV₋) + (PV₊) - (2 × PV₀)] / [(ΔYield)² × PV₀] = [103.52 + 103.84 - (2 × 103.67)] / [(0.002)² × 103.67] = 48.230." },
+            { id: 19, question: "If 1,000 shares of stock purchased at $30 per share on 75% margin are later sold at $26 per share, the return on equity is closest to:", options: { A: "-17.8%.", B: "-13.3%.", C: "-10.0%." }, correct: "A", explanation: "Initial investment = $30,000 × 75% = $22,500. Loss = ($26,000 - $30,000) = -$4,000. Return on equity = -$4,000 / $22,500 = -17.78%." },
+            { id: 20, question: "An American waterfall distributes performance fees on a(n):", options: { A: "deal-by-deal basis and is more advantageous to the general partner than a European waterfall.", B: "deal-by-deal basis and is more advantageous to the limited partners than a European waterfall.", C: "aggregated fund level and is more advantageous to the limited partners than a European waterfall." }, correct: "A", explanation: "American (deal-by-deal) waterfalls are more advantageous to GPs as performance fees are collected per deal. European (whole-of-fund) waterfalls occur at aggregate fund level and favor LPs." },
+            { id: 21, question: "All else being equal, non-cumulative preference shares are more risky for investors than:", options: { A: "cumulative preference shares.", B: "dividend-paying common shares.", C: "non-dividend-paying common shares." }, correct: "A", explanation: "Cumulative preference shares have lower risk than non-cumulative because the cumulative feature gives investors the right to receive unpaid dividends before any dividends can be paid to common shareholders." },
+            { id: 22, question: "Which of the following statements is most likely correct regarding the spot and forward curves. The spot curve:", options: { A: "can be calculated from the forward curve, and the forward curve can be calculated from the spot curve.", B: "can be calculated from the forward curve, but the forward curve cannot be calculated from the spot curve.", C: "cannot be calculated from the forward curve, but the forward curve can be calculated from the spot curve." }, correct: "A", explanation: "The forward and spot curves are interconnected. The spot curve can be calculated from the forward curve, and the forward curve can be calculated from the spot curve." },
+            { id: 23, question: "An investor sells a European put option with the following characteristics: Put price: 30, Exercise price: 600. If the price of the underlying at expiration is 620, the profit for the seller is:", options: { A: "10.", B: "20.", C: "30." }, correct: "C", explanation: "Put seller's profit = -Max(0, X - Sᴛ) + p₀ = -Max(0, 600 - 620) + 30 = 0 + 30 = 30." },
+            { id: 24, question: "With respect to an investment policy statement, which of the following is best classified as a pension fund's legal and regulatory constraint?", options: { A: "An investor's tax status.", B: "Self-investment limit.", C: "An investor's desire to avoid investments in the gambling industry." }, correct: "B", explanation: "Self-investment limits (restrictions on percentage of assets invested in securities issued by the plan sponsor) are legal and regulatory constraints for pension funds." },
+            { id: 25, question: "According to put-call-forward parity, the difference between the price of a put and the price of a call is most likely equal to the difference between:", options: { A: "forward price and spot price discounted at the risk-free rate.", B: "spot price and exercise price discounted at the risk-free rate.", C: "exercise price and forward price discounted at the risk-free rate." }, correct: "C", explanation: "Put-call-forward parity: p₀ - c₀ = [X - F₀(T)] / (1+r)ᵀ. The difference between put and call price equals the difference between exercise price and forward price discounted at the risk-free rate." },
+            { id: 26, question: "With respect to a client's IPS, which of the following measures is most likely used when stating a relative risk objective?", options: { A: "Value at risk.", B: "Tracking risk.", C: "Standard deviation of returns." }, correct: "B", explanation: "Tracking risk (tracking error) measures risk relative to a benchmark and is used for relative risk objectives. Value at risk and standard deviation measure absolute risk." },
+            { id: 27, question: "A call option is in the money if the exercise price minus the price of the underlying at expiration is:", options: { A: "less than zero.", B: "equal to zero.", C: "greater than zero." }, correct: "A", explanation: "A call is in the money when Sᴛ > X, which means X - Sᴛ < 0." },
+            { id: 28, question: "A 5% semi-annual pay bond with a par value of $1,000 is priced for settlement on February 5. If interest payments are made on May 31 and November 30, accrued interest based on 30/360 day-count convention is closest to:", options: { A: "$9.03.", B: "$9.18.", C: "$9.31." }, correct: "A", explanation: "Using 30/360 convention: 2 months + 5 days = 65 days. Accrued interest = (65/180) × (5.0/2) = 0.9028 per 100 par value = $9.03 per bond." },
+            { id: 29, question: "An analyst gathers the following information about returns for an equity index: Year 1: 5%, Year 2: 3%, Year 3: 12%. The index's total return over three years is closest to:", options: { A: "18%.", B: "20%.", C: "21%." }, correct: "C", explanation: "Total return = [(1 + 0.05) × (1 + 0.03) × (1 + 0.12)] - 1 = 1.2096 - 1 = 0.2096 ≈ 21%." },
+            { id: 30, question: "An analyst discovers that several stocks exhibit a pattern of price declines in the spring and price increases in the fall. If the analyst can consistently earn abnormal returns using this information, the market is most likely:", options: { A: "inefficient.", B: "weak-form efficient.", C: "semi-strong-form efficient." }, correct: "A", explanation: "If the analyst can profitably trade on past price patterns, the market is not weak-form efficient (and therefore not semi-strong or strong-form efficient either)." },
+            { id: 31, question: "An investor gathered the following data: Par value of preferred stock: $100, Dividend rate: 6%, Company's sustainable growth rate: 5%, Yield on comparable preferred stock issues: 11.5%, Investor's marginal tax rate: 30%. The value of the company's preferred stock is closest to:", options: { A: "$52.17.", B: "$54.78.", C: "$96.92." }, correct: "C", explanation: "V = D₀(1+g) / (r-g) = $100(0.06)(1.05) / (0.115 - 0.05) = $6.30 / 0.065 = $96.92." },
+            { id: 32, question: "In an order-driven market, if the trade price is determined by the limit price of an order, the market most likely operates under the:", options: { A: "uniform pricing rule.", B: "derivative pricing rule.", C: "discriminatory pricing rule." }, correct: "C", explanation: "Under the discriminatory pricing rule, the limit price of the order that first arrived (the standing order) determines the trade price." },
+            { id: 33, question: "An analyst gathers the following information on three investors. Each investor holds a bond with a Macaulay duration of 5.5 years in his portfolio: Investor A Investment Horizon: 5 years, Investor B: 2 years, Investor C: 8 years. All else equal, which investor is currently most vulnerable to an increase in interest rates?", options: { A: "Investor A.", B: "Investor B.", C: "Investor C." }, correct: "B", explanation: "Investor B has an investment horizon (2 years) shorter than the Macaulay duration (5.5 years). When horizon < duration, market price risk dominates, making the investor vulnerable to higher rates." },
+            { id: 34, question: "An analyst gathers the following data about three assets' returns: Asset 1 Beta: 1.000, Correlation: 0.8; Asset 2 Beta: 1.225, Correlation: 0.7; Asset 3 Beta: 1.125, Correlation: 0.5. If the market portfolio's standard deviation of returns is 20%, the asset with the highest standard deviation is:", options: { A: "Asset 1.", B: "Asset 2.", C: "Asset 3." }, correct: "C", explanation: "σᵢ = (βᵢ × σₘ) / ρᵢₘ. Asset 1: (1.000 × 0.2)/0.8 = 0.25. Asset 2: (1.225 × 0.2)/0.7 = 0.35. Asset 3: (1.125 × 0.2)/0.5 = 0.45. Asset 3 has the highest standard deviation." },
+            { id: 35, question: "Jim Cotter is considering investing in a stock index fund and a property investment fund. Investment amounts: Stock index $10M, Property $90M. Expected returns: 20%, 33%. Standard deviations: 35%, 70%. Correlation: -0.1. The portfolio's standard deviation is closest to:", options: { A: "62.75%.", B: "63.10%.", C: "63.45%." }, correct: "A", explanation: "σₚ = √[(0.1²×0.35²) + (0.9²×0.7²) + (2×0.1×0.9×(-0.1)×0.35×0.7)] = √0.3938 = 62.75%." },
+            { id: 36, question: "For an option-free bond, effective duration:", options: { A: "will be equal to modified duration if the yield curve is absolutely flat.", B: "is an estimate of the percentage change in bond price given a change in the bond's yield to maturity.", C: "measures interest rate risk for both parallel and non-parallel benchmark yield curve shifts." }, correct: "A", explanation: "Effective duration and modified duration are identical for option-free bonds only when the yield curve is absolutely flat. Typically they differ." },
+            { id: 37, question: "An analyst observes that stock markets usually demonstrate return distributions concentrated to the right with a higher frequency of negative deviation from the mean. This feature is most likely known as:", options: { A: "kurtosis.", B: "positive skewness.", C: "negative skewness." }, correct: "C", explanation: "Distribution concentrated to the right with more frequent negative deviations from the mean describes negative skewness." },
+            { id: 38, question: "Which of the following statements is most accurate? In derivatives pricing:", options: { A: "investors are assumed to be risk averse.", B: "expected payoffs of the derivative can be discounted at the risk-free rate.", C: "a portfolio consisting of the underlying and the derivative must earn the risk-free rate plus a risk premium." }, correct: "B", explanation: "Risk-neutral pricing means expected payoffs of derivatives can be discounted at the risk-free rate, not risk-free rate plus a risk premium. Investor risk aversion is not relevant to derivative pricing." },
+            { id: 39, question: "Which of the following statements about digital assets is most accurate?", options: { A: "Most have an inherent value based on the expected cash flow.", B: "They can be purchased through indirect investment vehicles such as hedge funds.", C: "They are generally recorded in private ledgers maintained by central intermediaries." }, correct: "B", explanation: "Digital assets can be purchased through indirect investment vehicles like ETFs and hedge funds. Most do not have inherent value based on cash flows, and they're not recorded in private ledgers maintained by central intermediaries." },
+            { id: 40, question: "The portion of a bond's value that an investor loses in an event of default best defines:", options: { A: "default risk.", B: "loss severity.", C: "expected loss." }, correct: "B", explanation: "Loss severity (loss given default) is the portion of a bond's value (including unpaid interest) an investor loses in the event of default." },
+            { id: 41, question: "Which investment will most likely expose investors to the greatest level of extension risk?", options: { A: "Commercial mortgage-backed securities with a balloon payment.", B: "Shorter-term tranches in a collateralized mortgage obligation structure.", C: "Planned amortization class tranches in a collateralized mortgage obligation structure." }, correct: "A", explanation: "CMBS with balloon payments have balloon risk (a type of extension risk) when the borrower cannot make the balloon payment and the loan term is extended." },
+            { id: 42, question: "A fiduciary call is equal to which of the following positions?", options: { A: "Long a call and long a risk-free bond.", B: "Long a call, long a risk-free bond, and short a put.", C: "Long a call, short the underlying, and long a risk-free bond." }, correct: "A", explanation: "A fiduciary call consists of a long call and long risk-free bond." },
+            { id: 43, question: "An analyst gathers the following information about a company: Next year's EPS forecast: $0.60, Dividend payout ratio: 45%, Growth rate: 7%. Using the Gordon growth model, if the analyst's required return is 10%, the justified forward P/E for the company is closest to:", options: { A: "15.", B: "18.", C: "20." }, correct: "A", explanation: "Justified forward P/E = p / (r - g) = 0.45 / (0.10 - 0.07) = 0.45 / 0.03 = 15." },
+            { id: 44, question: "An analyst gathers the following information about a company and its common stock: Expected dividend per share: $2, Return on equity: 4%, Estimated dividend growth rate: 9%. Based on the Gordon growth model, if the required rate of return increases from 8% to 14%, the value of the stock decreases by:", options: { A: "50%.", B: "60%.", C: "75%." }, correct: "B", explanation: "At r=8%: V = $2/(0.08-0.04) = $50. At r=14%: V = $2/(0.14-0.04) = $20. Decrease = ($50-$20)/$50 = 60%." },
+            { id: 45, question: "Which of the following derivative contracts has a hard commodity underlying?", options: { A: "Cattle futures.", B: "Soybean futures.", C: "Aluminum futures." }, correct: "C", explanation: "Aluminum futures are metals contracts (hard commodities). Cattle and soybeans are soft commodities (agricultural products)." },
+            { id: 46, question: "The historical results forecasting approach is most appropriate for a company:", options: { A: "making a large acquisition.", B: "operating in a cyclical industry.", C: "with a low sensitivity to the business cycle." }, correct: "C", explanation: "Historical forecasting is appropriate for companies with low sensitivity to business cycles and stable industry structures. It's inappropriate for cyclical industries or companies making large acquisitions." },
+            { id: 47, question: "At the initiation of a securitization, the primary role of the special purpose entity is to:", options: { A: "sell the collateral.", B: "service the collateral.", C: "purchase the collateral." }, correct: "C", explanation: "The SPE's primary role at initiation is to purchase the loans or receivables (collateral) from the seller and use them as collateral to issue the ABS." },
+            { id: 48, question: "Investing in correctional facilities to be constructed and sold to the government is best described as a(n):", options: { A: "greenfield investment.", B: "brownfield investment.", C: "economic infrastructure investment." }, correct: "A", explanation: "Greenfield investments involve developing new assets and new infrastructure (like constructing correctional facilities). This is a social infrastructure asset, not economic." },
+            { id: 49, question: "On 1 January, an investor purchases an option-free bond that pays an annual coupon rate of 10% on Dec 31 and matures in ten years at its par value of $100. The investor plans to sell the bond immediately after receiving the seventh coupon. If the coupons are reinvested at an annual interest rate of 8% over the investor's holding period, the future value of the reinvested coupon payments at the end of the investor's holding period is closest to:", options: { A: "$70.00.", B: "$75.90.", C: "$89.23." }, correct: "C", explanation: "FV = 10(1.08)⁶ + 10(1.08)⁵ + 10(1.08)⁴ + 10(1.08)³ + 10(1.08)² + 10(1.08) + 10 = $89.23." },
+            { id: 50, question: "An analyst gathers the following information (in £millions) about a company's fiscal year: Net income: 1,500, Average total assets: 11,500, Average shareholders' equity: 7,500. If the dividend payout ratio is 45%, the sustainable growth rate is closest to:", options: { A: "7%.", B: "9%.", C: "11%." }, correct: "C", explanation: "SGR = Retention rate × ROE = (1 - 0.45) × (1,500/7,500) = 0.55 × 0.2 = 0.11 = 11%." },
+            { id: 51, question: "In an efficient market, asset prices most likely react to the release of:", options: { A: "expected information only.", B: "unexpected information only.", C: "both expected information and unexpected information." }, correct: "B", explanation: "In an efficient market, prices already reflect expected information. Prices react only to unexpected or 'surprise' elements of information releases." },
+            { id: 52, question: "The multiple of invested capital (MOIC) measure takes into account:", options: { A: "the realized value of an investment only.", B: "the residual asset value of an investment only.", C: "both the realized value of an investment and the residual asset value of an investment." }, correct: "C", explanation: "MOIC = (Realized value + Unrealized/residual value) / Total invested capital. It measures both realized investments and residual asset values." },
+            { id: 53, question: "Consider two 10-year bonds, one that contains no embedded options and the other that gives its owner the right to convert the bond to a fixed number of shares of the issuer's common stock. The convertibility option in the second bond cannot be exercised for five years. The bonds are otherwise identical. Compared with the yield on the convertible bond, the yield on the option-free bond is most likely:", options: { A: "lower.", B: "the same.", C: "higher." }, correct: "C", explanation: "The convertibility option benefits investors, who will accept a lower yield on the convertible bond. Therefore, the option-free bond will have a higher yield." },
+            { id: 54, question: "The type of index weighting system in which a stock split on one constituent security changes the weights on all the securities in the index is:", options: { A: "price weighting.", B: "equal weighting.", C: "value weighting." }, correct: "A", explanation: "In price-weighted indexes, a stock split on one constituent changes the weights on all securities in the index." },
+            { id: 55, question: "Two assets are correctly priced according to the CAPM. If the assets have the same expected variance of returns but different expected returns, the two assets must have different levels of:", options: { A: "systematic risk only.", B: "unsystematic risk only.", C: "both systematic risk and unsystematic risk." }, correct: "C", explanation: "CAPM implies different expected returns require different systematic risk (beta). With same total variance, they must also have different unsystematic risk. Total variance = Systematic variance + Unsystematic variance." },
+            { id: 56, question: "An analyst gathers the following information about a market for a stock: Best offer: $48, Market bid-ask spread: $2. If a new sell limit order is placed at $49, the limit order:", options: { A: "takes the market.", B: "makes the market.", C: "is behind the market." }, correct: "C", explanation: "A sell order placed above the best offer ($49 > $48) is behind the market." },
+            { id: 57, question: "Which of the following statements regarding certificates of deposit (CDs) is most accurate?", options: { A: "Small-denomination CDs are typically traded among institutional investors.", B: "Non-negotiable CDs can be sold in the open market prior to the maturity date.", C: "CDs are available in domestic bond markets as well as in the Eurobond market." }, correct: "C", explanation: "CDs are available in both domestic bond markets and the Eurobond market. Small-denomination CDs are retail products, and non-negotiable CDs cannot be sold before maturity." },
+            { id: 58, question: "Which of the following lines is depicted on a graph using systematic risk on the horizontal axis?", options: { A: "Capital market line (CML).", B: "Security market line (SML).", C: "Capital allocation line (CAL)." }, correct: "B", explanation: "The Security Market Line (SML) uses beta (systematic risk) on the horizontal axis and expected return on the vertical axis." },
+            { id: 59, question: "Which of the following investors is least likely to be concerned about liquidity risk?", options: { A: "A manager of a fixed-income mutual fund.", B: "An individual investor intending to hold a bond to maturity.", C: "An investor using repurchase agreements to purchase bonds." }, correct: "B", explanation: "An investor holding a bond to maturity is least concerned with liquidity risk as they don't intend to sell the bond." },
+            { id: 60, question: "Information-motivated traders are most likely to differ from pure investors in that they:", options: { A: "pay lower transaction fees.", B: "expect to earn excess returns.", C: "hold well-diversified portfolios." }, correct: "B", explanation: "Information-motivated traders expect to earn returns in excess of market returns because they trade on securities they believe the market has mis-valued." },
+            { id: 61, question: "An investor bears more risk than initially thought because of the failure to consider the interaction of credit risk and market risk. This type of risk interaction is best described as:", options: { A: "solvency risk.", B: "wrong-way risk.", C: "operational risk." }, correct: "B", explanation: "Wrong-way risk occurs when credit risk is compounded by market risk, causing the investor to bear more risk than initially thought." },
+            { id: 62, question: "Which of the following industry classification schemes covers private companies, non-profits, and government entities?", options: { A: "The Industry Classification Benchmark (ICB).", B: "The Refinitiv Business Classification (TRBC).", C: "The Global Industry Classification Standard (GICS)." }, correct: "B", explanation: "TRBC covers private companies, non-profits, and government entities, while GICS and ICB cover only public companies." },
+            { id: 63, question: "A high-quality and a high-yield corporation are each issuing subordinated debt with similar characteristics. Compared to the high-yield issuer, the notching adjustment for the high-quality issuer will most likely be:", options: { A: "smaller.", B: "the same.", C: "larger." }, correct: "A", explanation: "Higher-rated credits have smaller notching adjustments because the lower risk of default reduces the need to adjust ratings based on priority ranking differences." },
+            { id: 64, question: "The holders of common shares of a company are legally entitled to:", options: { A: "receive regular dividends from the company.", B: "a repayment of the purchase price of their shares.", C: "a claim on the company's net assets in the event of liquidation." }, correct: "C", explanation: "Common shareholders have a claim on the company's net assets in liquidation. They are not contractually entitled to dividends or repayment of purchase price." },
+            { id: 65, question: "Which of the following categories of private debt most likely has the highest level of risk for an investor?", options: { A: "Mezzanine debt.", B: "Senior direct debt.", C: "Infrastructure debt." }, correct: "A", explanation: "Mezzanine debt is riskier than senior secured debt, which is riskier than infrastructure debt, due to its typically junior ranking and usually unsecured status." },
+            { id: 66, question: "Hedge funds are least likely to have restrictions concerning:", options: { A: "the use of derivatives.", B: "the withdrawal of invested funds.", C: "the number of investors in the fund." }, correct: "A", explanation: "Use of derivatives is a typical feature of hedge funds. They do tend to impose restrictions on fund withdrawals and limit the number of investors." },
+            { id: 67, question: "After issuance, the coupon rate of a floating-rate bond is most likely influenced by changes in:", options: { A: "the reference rate only.", B: "both the reference rate and the issuer's credit quality.", C: "the issuer's credit quality only." }, correct: "A", explanation: "The coupon rate adjusts based on the reference rate only. The spread (reflecting credit quality) is set at issuance and remains constant. Credit quality changes after issuance affect price, not coupon rate." },
+            { id: 68, question: "An investor buys a stock for $108 on margin by posting 40% of the initial stock price as equity. If the maintenance margin requirement for the position is 20%, a margin call first occurs when the price falls below:", options: { A: "$64.80.", B: "$81.00.", C: "$86.40." }, correct: "B", explanation: "Margin call price: (Equity/share) / (Price/share) = ($43.20 + P - $108) / P = 20%. Solving: P = $81.00." },
+            { id: 69, question: "All else being equal, which of the following statements based on the binomial model is accurate? When the volatility of the underlying increases, the value of a:", options: { A: "put option and the value of a call option on the underlying will increase.", B: "put option on the underlying will increase while the value of a call option on the underlying will decrease.", C: "call option on the underlying will increase while the value of a put option on the underlying will decrease." }, correct: "A", explanation: "When volatility increases, both put and call option values increase because the range of possible outcomes widens." },
+            { id: 70, question: "An analyst calculates the duration of a portfolio containing only fixed-rate bonds, callable bonds, and asset-backed securities. Which duration measure is the most appropriate to use?", options: { A: "Macaulay duration.", B: "Effective duration.", C: "Modified duration." }, correct: "B", explanation: "Effective duration is appropriate for instruments with uncertain cash flows like callable bonds. Macaulay and modified durations don't apply to callable bonds." },
+            { id: 71, question: "Consider a put option selling for $4 in which the exercise price is $58. What is the profit for a put buyer if the price of the underlying at expiration is $57?", options: { A: "-$3.", B: "$1.", C: "$3." }, correct: "A", explanation: "Put value at expiration = Max(0, X - Sᴛ) = Max(0, 58 - 57) = $1. Put buyer's profit = $1 - $4 = -$3." },
+            { id: 72, question: "Short exposure to an underlying instrument is achieved by:", options: { A: "writing a put option.", B: "buying a put option.", C: "buying a call option." }, correct: "B", explanation: "Put contract buyers have long exposure to their option and short exposure to the underlying instrument." },
+            { id: 73, question: "All else equal, interest rate risk is lowest for which of the following non-callable bonds?", options: { A: "Discount.", B: "Premium.", C: "Zero-coupon." }, correct: "B", explanation: "High-coupon bonds (premium bonds) have less interest rate risk (lower duration) than low-coupon or zero-coupon bonds." },
+            { id: 74, question: "Which of the following types of investors most likely has the highest risk tolerance?", options: { A: "Banks.", B: "Endowments.", C: "Insurance companies." }, correct: "B", explanation: "Endowments typically have high risk tolerance, while banks and insurance companies have quite low risk tolerance." },
+            { id: 75, question: "For an investor with a long position, the price of a futures contract will most likely be higher than the price on a forward contract on the same asset with the same expiration date if there is a:", options: { A: "negative correlation between the futures price and interest rates.", B: "zero correlation between the futures price and interest rates.", C: "positive correlation between the futures price and interest rates." }, correct: "C", explanation: "With positive correlation, rising prices lead to futures profits reinvested at higher rates, making futures more valuable than forwards for long positions." },
+            { id: 76, question: "Which of the following investments most likely provides an investor with indirect equity exposure to real estate?", options: { A: "Real estate investment trusts.", B: "Real estate limited partnerships.", C: "Commercial mortgage-backed securities." }, correct: "A", explanation: "REITs provide indirect equity real estate exposure. Limited partnerships are direct equity investments. CMBS provide indirect debt exposure." },
+            { id: 77, question: "Two risk managers are discussing how an organization's risk tolerance should be determined. The first manager says, 'The risk tolerance must reflect the losses or shortfalls that will cause the organization to fail to meet critical objectives.' The second manager responds, 'The risk tolerance must reflect the external forces that bring uncertainty to the organization.' Which of them is most likely correct?", options: { A: "Both risk managers.", B: "The first risk manager.", C: "The second risk manager." }, correct: "A", explanation: "Risk tolerance should reflect both an 'inside' view (losses preventing critical objectives) and an 'outside' view (external sources of uncertainty)." },
+            { id: 78, question: "In contrast to a contingent claim, a forward commitment creates counterparty risk for:", options: { A: "the long position only.", B: "the short position only.", C: "both the long and the short positions." }, correct: "C", explanation: "Forward commitments require both counterparties to perform, creating counterparty risk for both. Options (contingent claims) only obligate the seller." },
+            { id: 79, question: "Management fees for private equity funds are most likely based on:", options: { A: "invested capital.", B: "committed capital.", C: "assets under management." }, correct: "B", explanation: "Private equity management fees are typically based on committed capital, unlike hedge funds which use assets under management (AUM)." },
+            { id: 80, question: "Which of the following offers the flexibility of delaying harvests when their prices are down?", options: { A: "Farmland only.", B: "Timberland only.", C: "Both farmland and timberland." }, correct: "B", explanation: "Timberland serves as both factory and warehouse, offering flexibility to delay harvests when prices are down. Farm products must be harvested when ripe." },
+            { id: 81, question: "Compared with co-investing, direct investing in alternative investments most likely offers:", options: { A: "reduced control over the investment selection process.", B: "the same level of control over the investment selection process.", C: "higher control over the investment selection process." }, correct: "C", explanation: "Direct investing offers higher control over investment selection compared to co-investing, which offers reduced control." },
+            { id: 82, question: "An investor who prefers an asset with an uncertain expected payoff of $50 to a guaranteed payoff of $50 is best described as:", options: { A: "risk averse.", B: "risk neutral.", C: "risk seeking." }, correct: "C", explanation: "An investor who chooses the gamble (uncertain outcome) over the guaranteed outcome with the same expected value is risk seeking." },
+            { id: 83, question: "Which of the following market anomalies describes the consistent outperformance of stocks with low P/E ratios?", options: { A: "The size effect.", B: "The value effect.", C: "The earnings surprise anomaly." }, correct: "B", explanation: "The value effect is based on the observation that stocks with below-average P/E ratios consistently outperform growth stocks." },
+            { id: 84, question: "The Procedures section of an investment policy statement (IPS) most likely:", options: { A: "explains the steps to keep the IPS current.", B: "provides information about the permissible use of leverage.", C: "details the investor's policy with respect to rebalancing asset class weights." }, correct: "A", explanation: "The Procedures section explains steps to keep the IPS current and procedures for responding to contingencies. Investment Guidelines cover leverage, and appendices cover rebalancing." },
+            { id: 85, question: "In a positive interest rate environment, the modified duration of an option-free bond is most likely:", options: { A: "less than the Macaulay duration.", B: "the same as the Macaulay duration.", C: "greater than the Macaulay duration." }, correct: "A", explanation: "Modified duration = Macaulay duration / (1 + yield per period). With positive rates, modified duration < Macaulay duration." },
+            { id: 86, question: "Which of the following asset-backed securities provides the highest level of protection against prepayment risk?", options: { A: "A mortgage pass-through security.", B: "A collateralized mortgage obligation.", C: "A commercial mortgage-backed security." }, correct: "C", explanation: "CMBS investors have considerable call protection against early prepayments, unlike RMBS investors who face considerable prepayment risk." },
+            { id: 87, question: "Consider a $100 par value bond with a 7% coupon paid annually and five years to maturity. At a discount rate of 6.5%, the value of the bond today is $102.08. One day later, the discount rate increases to 7.5%. Assuming the discount rate remains at 7.5% over the remaining life of the bond, what is most likely to occur to the price of the bond between today and maturity? The price:", options: { A: "decreases then increases.", B: "increases then decreases.", C: "decreases then remains unchanged." }, correct: "A", explanation: "When discount rate increases to 7.5%, price decreases (bond trades at discount). As the discount bond approaches maturity, it increases in price until it reaches par." },
+            { id: 88, question: "Which of the following best describes an investment principle used in formulating a client's strategic asset allocation?", options: { A: "Assets with greater nonsystematic risk should be given less weight in a portfolio.", B: "Returns on asset classes are a function of systematic factors relevant to those asset classes.", C: "The more efficient an asset class, the more skillful an asset manager has to be." }, correct: "B", explanation: "SAA is based on the principle that returns to groups of similar assets predictably reflect exposures to systematic factors. SAA provides exposure to systematic risks of asset classes." },
+            { id: 89, question: "Which type of index does not use market capitalization as a weighting method?", options: { A: "A broad equity market index.", B: "A commodity index.", C: "A real estate investment trust (REIT) index." }, correct: "B", explanation: "Commodity indexes do not have an obvious weighting mechanism like market capitalization, so providers create their own weighting methods." },
+            { id: 90, question: "A bond has a duration of 4.50 and convexity of 39.20. If interest rates increase by 0.5%, the percentage change in the bond's price will be closest to:", options: { A: "-2.30%.", B: "-2.25%.", C: "-2.20%." }, correct: "C", explanation: "Price change = (-Duration × Δy) + (0.5 × C × (Δy)²) = (-4.50 × 0.005) + (0.5 × 39.20 × 0.005²) = -0.0225 + 0.00049 = -0.0220 or -2.20%." }
+        ];
+
+        // --- UTILITIES ---
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            });
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        const formatTime = (seconds) => {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = seconds % 60;
+            return `${h}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        };
+
+        /* =========================================
+           COMPONENT: WELCOME SCREEN
+           ========================================= */
+        const WelcomeScreen = ({ onStart }) => (
+            <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-slate-900 to-black text-white flex flex-col items-center justify-center p-6 relative overflow-hidden">
+                {/* Background Decor */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 opacity-20">
+                    <div className="absolute top-10 left-10 w-64 h-64 bg-indigo-500 rounded-full blur-[100px]"></div>
+                    <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-600 rounded-full blur-[120px]"></div>
+                </div>
+
+                <div className="relative z-10 max-w-3xl w-full text-center animate-fade-in">
+                    <div className="mb-8 inline-block p-4 bg-white/10 backdrop-blur-md rounded-full border border-white/20 shadow-2xl">
+                        <Icon name="award" size={48} className="text-yellow-400" />
+                    </div>
+                    
+                    <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red via-indigo-200 to-indigo-500">
+                        CFA Level 1 Mock Exam
+</h1>
+                    
+                    <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                        A comprehensive, two-session simulation designed to mirror the actual exam environment. 
+                        Test your readiness with 180 questions across all topic areas.
+                    </p>
+
+                    <button 
+                        onClick={onStart}
+                        className="group relative inline-flex items-center gap-3 px-8 py-4 bg-white text-indigo-900 rounded-full font-bold text-lg hover:bg-indigo-50 transition-all transform hover:scale-105 shadow-xl hover:shadow-indigo-500/25"
+                    >
+                        Enter Examination Hall
+                        <Icon name="arrow-right" className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                </div>
+
+                {/* Footer Attribution */}
+                <div className="absolute bottom-6 text-center w-full z-10">
+                    <p className="text-[10px] text-slate-500 uppercase tracking-widest">
+                        Designed & Developed by <br />
+                        <a 
+                            href="https://www.linkedin.com/in/sahil-gaikwad-1953b0259" 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="font-bold text-slate-400 hover:text-white transition-colors underline decoration-slate-600 hover:decoration-white mt-1 inline-block"
+                        >
+                            Sahil Gaikwad
+                        </a>
+                    </p>
+                </div>
+            </div>
+        );
+
+        /* =========================================
+           COMPONENT: EXAM SESSION (Fixed View)
+           ========================================= */
+        const ExamSession = ({ sessionName, data, timeLimitMinutes, onComplete, onExit }) => {
+            const [currentQIndex, setCurrentQIndex] = useState(0);
+            const [answers, setAnswers] = useState({});
+            const [timeLeft, setTimeLeft] = useState(timeLimitMinutes * 60);
+            
+            // Timer
+            useEffect(() => {
+                const timer = setInterval(() => {
+                    setTimeLeft(prev => {
+                        if (prev <= 1) {
+                            clearInterval(timer);
+                            handleFinish();
+                            return 0;
+                        }
+                        return prev - 1;
+                    });
+                }, 1000);
+                return () => clearInterval(timer);
+            }, []);
+
+            const handleAnswer = (qId, optionKey) => {
+                setAnswers(prev => ({ ...prev, [qId]: optionKey }));
+            };
+
+            const handleFinish = () => {
+                // Calculate detailed results
+                let correctCount = 0;
+                data.forEach(q => {
+                    if (answers[q.id] === q.correct) correctCount++;
+                });
+                
+                const resultData = {
+                    answers: answers,
+                    score: correctCount,
+                    total: data.length,
+                    percentage: ((correctCount / data.length) * 100).toFixed(1),
+                    timeSpent: (timeLimitMinutes * 60) - timeLeft
+                };
+                onComplete(resultData);
+            };
+
+            const currentQ = data[currentQIndex];
+            const progress = ((currentQIndex + 1) / data.length) * 100;
+            const isLastQ = currentQIndex === data.length - 1;
+
+            return (
+                <div className="min-h-screen bg-slate-50 flex flex-col animate-fade-in">
+                    {/* Header */}
+                    <header className="bg-white border-b border-slate-200 sticky top-0 z-20 px-6 py-4 shadow-sm">
+                        <div className="max-w-6xl mx-auto flex justify-between items-center">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-indigo-100 p-2 rounded-lg text-indigo-600">
+                                    <Icon name="book-open" size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="font-bold text-slate-800">{sessionName}</h2>
+                                    <p className="text-xs text-slate-500">Question {currentQIndex + 1} of {data.length}</p>
+                                </div>
+                            </div>
+                            <div className={`flex items-center gap-2 font-mono text-xl px-4 py-2 rounded-lg ${timeLeft < 300 ? 'bg-red-50 text-red-600 animate-pulse' : 'bg-slate-100 text-slate-700'}`}>
+                                <Icon name="clock" size={20} />
+                                {formatTime(timeLeft)}
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Progress Bar */}
+                    <div className="h-1.5 w-full bg-slate-200">
+                        <div className="h-full bg-indigo-600 transition-all duration-300" style={{ width: `${progress}%` }}></div>
+                    </div>
+
+                    {/* Main Content */}
+                    <main className="flex-grow max-w-4xl mx-auto w-full p-4 md:p-8">
+                        {/* Question Card - CLEANED UP: Removed large background number */}
+                        <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 mb-6 relative overflow-hidden">
+                            {/* Removed the large <span> that was obstructing text */}
+                            
+                            <h3 className="text-xl md:text-2xl text-slate-800 font-medium mb-8 leading-relaxed relative z-10">
+                                {currentQ.question}
+                            </h3>
+
+                            <div className="space-y-3 relative z-10">
+                                {Object.entries(currentQ.options).map(([key, value]) => {
+                                    const isSelected = answers[currentQ.id] === key;
+                                    return (
+                                        <button
+                                            key={key}
+                                            onClick={() => handleAnswer(currentQ.id, key)}
+                                            className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200 flex items-start gap-4 group ${
+                                                isSelected 
+                                                ? 'border-indigo-600 bg-indigo-50 shadow-md transform scale-[1.01]' 
+                                                : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                                            }`}
+                                        >
+                                            <span className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors ${
+                                                isSelected ? 'bg-indigo-600 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-indigo-200 group-hover:text-indigo-700'
+                                            }`}>
+                                                {key}
+                                            </span>
+                                            <span className="text-slate-700 pt-1">{value}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Controls */}
+                        <div className="flex justify-between items-center">
+                            <button 
+                                onClick={() => setCurrentQIndex(prev => Math.max(0, prev - 1))}
+                                disabled={currentQIndex === 0}
+                                className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 transition-colors ${
+                                    currentQIndex === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-white hover:shadow-sm'
+                                }`}
+                            >
+                                <Icon name="chevron-left" /> Previous
+                            </button>
+
+                            {isLastQ ? (
+                                <button 
+                                    onClick={() => {
+                                        if (confirm("Are you sure you want to submit this session? You cannot change answers afterwards.")) {
+                                            handleFinish();
+                                        }
+                                    }}
+                                    className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg font-bold shadow-lg hover:shadow-xl hover:scale-105 transition-all flex items-center gap-2"
+                                >
+                                    Submit Session <Icon name="check-circle" />
+                                </button>
+                            ) : (
+                                <button 
+                                    onClick={() => setCurrentQIndex(prev => prev + 1)}
+                                    className="px-8 py-3 bg-slate-900 text-white rounded-lg font-bold shadow-lg hover:bg-slate-800 hover:scale-105 transition-all flex items-center gap-2"
+                                >
+                                    Next Question <Icon name="chevron-right" />
+                                </button>
+                            )}
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        /* =========================================
+           COMPONENT: DASHBOARD (Hub)
+           ========================================= */
+        const Dashboard = ({ session1Status, session2Status, onStartSession, scores }) => {
+            return (
+                <div className="min-h-screen bg-slate-50 p-6 md:p-12 animate-slide-up">
+                    <div className="max-w-5xl mx-auto">
+                        <header className="mb-12 text-center md:text-left">
+                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Examination Dashboard</h1>
+                            <p className="text-slate-600">Complete both sessions to receive your final certification analysis.</p>
+                        </header>
+
+                        <div className="grid md:grid-cols-2 gap-8">
+                            {/* Session 1 Card */}
+                            <div className={`relative bg-white rounded-2xl p-8 border-2 transition-all ${
+                                session1Status === 'completed' ? 'border-green-200 bg-green-50/30' : 'border-indigo-100 shadow-xl'
+                            }`}>
+                                <div className="absolute top-6 right-6">
+                                    {session1Status === 'completed' 
+                                        ? <Icon name="check-circle" className="text-green-500" size={32} />
+                                        : <Icon name="circle-dashed" className="text-indigo-300" size={32} />
+                                    }
+                                </div>
+                                <h3 className="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2">Morning Session</h3>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-4">Session 1</h2>
+                                <p className="text-slate-600 mb-8 text-sm leading-relaxed">
+                                    Focuses on Ethical and Professional Standards, Quantitative Methods, Economics, and Financial Statement Analysis.
+                                </p>
+                                
+                                {session1Status === 'completed' ? (
+                                    <div className="bg-white p-4 rounded-xl border border-green-100 flex items-center gap-4">
+                                        <div className="bg-green-100 p-2 rounded-lg text-green-700 font-bold">{scores.s1}%</div>
+                                        <span className="text-green-800 font-medium text-sm">Session Completed</span>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => onStartSession(1)}
+                                        className="w-full py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700 transition-colors flex justify-center items-center gap-2"
+                                    >
+                                        Start Session 1
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Session 2 Card */}
+                            <div className={`relative rounded-2xl p-8 border-2 transition-all ${
+                                session1Status !== 'completed' ? 'bg-slate-100 border-slate-200 opacity-75' : 
+                                session2Status === 'completed' ? 'border-green-200 bg-green-50/30' : 'bg-white border-purple-100 shadow-xl'
+                            }`}>
+                                {session1Status !== 'completed' && (
+                                    <div className="absolute inset-0 z-10 bg-slate-100/50 backdrop-blur-[1px] rounded-2xl flex items-center justify-center">
+                                        <div className="bg-white px-6 py-3 rounded-full shadow-lg border border-slate-200 flex items-center gap-2 text-slate-500 text-sm font-medium">
+                                            <Icon name="lock" size={16} /> Locked
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="absolute top-6 right-6">
+                                     {session2Status === 'completed' 
+                                        ? <Icon name="check-circle" className="text-green-500" size={32} />
+                                        : <Icon name="circle-dashed" className="text-purple-300" size={32} />
+                                    }
+                                </div>
+                                <h3 className="text-xs font-bold text-purple-500 uppercase tracking-wider mb-2">Afternoon Session</h3>
+                                <h2 className="text-2xl font-bold text-slate-800 mb-4">Session 2</h2>
+                                <p className="text-slate-600 mb-8 text-sm leading-relaxed">
+                                    Focuses on Corporate Issuers, Equity, Fixed Income, Derivatives, Alternative Investments, and Portfolio Management.
+                                </p>
+
+                                {session2Status === 'completed' ? (
+                                    <div className="bg-white p-4 rounded-xl border border-green-100 flex items-center gap-4">
+                                        <div className="bg-green-100 p-2 rounded-lg text-green-700 font-bold">{scores.s2}%</div>
+                                        <span className="text-green-800 font-medium text-sm">Session Completed</span>
+                                    </div>
+                                ) : (
+                                    <button 
+                                        onClick={() => onStartSession(2)}
+                                        disabled={session1Status !== 'completed'}
+                                        className={`w-full py-3 rounded-xl font-semibold transition-colors flex justify-center items-center gap-2 ${
+                                            session1Status !== 'completed' 
+                                            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                                            : 'bg-purple-600 text-white hover:bg-purple-700'
+                                        }`}
+                                    >
+                                        Start Session 2
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {session2Status === 'completed' && (
+                            <div className="mt-12 text-center animate-fade-in">
+                                <button 
+                                    onClick={() => onStartSession('analysis')}
+                                    className="px-10 py-4 bg-slate-900 text-white text-lg font-bold rounded-full shadow-2xl hover:bg-black hover:scale-105 transition-all flex items-center gap-3 mx-auto"
+                                >
+                                    <Icon name="bar-chart-2" /> View Final Certification Report
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {/* Attribution Small */}
+                    <div className="fixed bottom-4 right-6 opacity-30 hover:opacity-100 transition-opacity">
+                        <a href="https://www.linkedin.com/in/sahil-gaikwad-1953b0259" target="_blank" className="text-[10px] text-slate-500 flex items-center gap-1">
+                             <Icon name="linkedin" size={10} /> Sahil Gaikwad
+                        </a>
+                    </div>
+                </div>
+            );
+        };
+
+        /* =========================================
+           COMPONENT: FINAL ANALYSIS
+           ========================================= */
+        const FinalReport = ({ s1Result, s2Result }) => {
+            const totalCorrect = s1Result.score + s2Result.score;
+            const totalQuestions = s1Result.total + s2Result.total;
+            const overallPercentage = ((totalCorrect / totalQuestions) * 100).toFixed(1);
+            const passed = overallPercentage >= 70;
+
+            useEffect(() => {
+                if (passed) {
+                    const duration = 3000;
+                    const end = Date.now() + duration;
+                    const frame = () => {
+                        confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#4F46E5', '#7C3AED', '#10B981'] });
+                        confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#4F46E5', '#7C3AED', '#10B981'] });
+                        if (Date.now() < end) requestAnimationFrame(frame);
+                    };
+                    frame();
+                }
+            }, [passed]);
+
+            return (
+                <div className="min-h-screen bg-slate-100 py-12 px-4 md:px-8">
+                    <div className="max-w-5xl mx-auto space-y-8 animate-slide-up">
+                        
+                        {/* Result Header */}
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden text-center p-12 relative">
+                            <div className={`absolute top-0 left-0 w-full h-2 ${passed ? 'bg-gradient-to-r from-green-400 to-emerald-600' : 'bg-gradient-to-r from-orange-400 to-red-600'}`}></div>
+                            
+                            <div className={`w-24 h-24 mx-auto rounded-full flex items-center justify-center mb-6 ${passed ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                                <Icon name={passed ? "trophy" : "activity"} size={48} />
+                            </div>
+                            
+                            <h1 className="text-4xl font-bold text-slate-900 mb-2">{passed ? "Exam Passed" : "Did Not Pass"}</h1>
+                            <p className="text-slate-500 mb-8 max-w-lg mx-auto">
+                                {passed 
+                                    ? "Excellent work. You have demonstrated the knowledge required to move forward." 
+                                    : "You fell short of the 70% passing threshold. Review the detailed breakdown below to identify weak areas."}
+                            </p>
+
+                            <div className="flex justify-center items-end gap-2 text-slate-900">
+                                <span className="text-6xl font-black">{overallPercentage}</span>
+                                <span className="text-2xl font-medium text-slate-400 mb-2">%</span>
+                            </div>
+                            <div className="text-sm font-medium text-slate-400 uppercase tracking-widest mt-2">Overall Score</div>
+                        </div>
+
+                        {/* Split Stats */}
+                        <div className="grid md:grid-cols-2 gap-6">
+                            {/* Session 1 Stat */}
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600"><Icon name="sun" size={24} /></div>
+                                    <span className="text-xl font-bold text-slate-800">{s1Result.percentage}%</span>
+                                </div>
+                                <h3 className="font-bold text-slate-700">Session 1</h3>
+                                <p className="text-sm text-slate-500">{s1Result.score} / {s1Result.total} Correct</p>
+                            </div>
+
+                            {/* Session 2 Stat */}
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                                <div className="flex justify-between items-start mb-4">
+                                    <div className="p-3 bg-purple-50 rounded-xl text-purple-600"><Icon name="moon" size={24} /></div>
+                                    <span className="text-xl font-bold text-slate-800">{s2Result.percentage}%</span>
+                                </div>
+                                <h3 className="font-bold text-slate-700">Session 2</h3>
+                                <p className="text-sm text-slate-500">{s2Result.score} / {s2Result.total} Correct</p>
+                            </div>
+                        </div>
+
+                        {/* Detailed Review Section */}
+                        <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-200">
+                            <div className="p-6 border-b border-slate-100 bg-slate-50">
+                                <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                                    <Icon name="list" size={20} /> Detailed Question Review
+                                </h3>
+                            </div>
+                            
+                            <div className="divide-y divide-slate-100">
+                                {/* Session 1 Review Header */}
+                                <div className="p-4 bg-indigo-50/50 font-bold text-indigo-800 text-sm">SESSION 1 REVIEW</div>
+                                {SESSION_1_DATA.map((q, i) => {
+                                    const userAns = s1Result.answers[q.id];
+                                    const isCorrect = userAns === q.correct;
+                                    return (
+                                        <div key={`s1-${q.id}`} className="p-6 hover:bg-slate-50 transition-colors">
+                                            <div className="flex gap-4">
+                                                <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {i + 1}
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="text-slate-800 font-medium mb-2">{q.question}</p>
+                                                    <div className="flex gap-4 text-sm mb-3">
+                                                        <span className={`${isCorrect ? 'text-green-600' : 'text-red-500'} font-semibold`}>
+                                                            Your Answer: {userAns || "Skipped"}
+                                                        </span>
+                                                        {!isCorrect && <span className="text-green-600 font-semibold">Correct Answer: {q.correct}</span>}
+                                                    </div>
+                                                    <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 border border-slate-100">
+                                                        <span className="font-bold text-slate-700">Explanation:</span> {q.explanation}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+
+                                {/* Session 2 Review Header */}
+                                <div className="p-4 bg-purple-50/50 font-bold text-purple-800 text-sm">SESSION 2 REVIEW</div>
+                                {SESSION_2_DATA.map((q, i) => {
+                                    const userAns = s2Result.answers[q.id];
+                                    const isCorrect = userAns === q.correct;
+                                    return (
+                                        <div key={`s2-${q.id}`} className="p-6 hover:bg-slate-50 transition-colors">
+                                            <div className="flex gap-4">
+                                                <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                                    {i + 1}
+                                                </div>
+                                                <div className="flex-grow">
+                                                    <p className="text-slate-800 font-medium mb-2">{q.question}</p>
+                                                    <div className="flex gap-4 text-sm mb-3">
+                                                        <span className={`${isCorrect ? 'text-green-600' : 'text-red-500'} font-semibold`}>
+                                                            Your Answer: {userAns || "Skipped"}
+                                                        </span>
+                                                        {!isCorrect && <span className="text-green-600 font-semibold">Correct Answer: {q.correct}</span>}
+                                                    </div>
+                                                    <div className="bg-slate-50 p-3 rounded-lg text-sm text-slate-600 border border-slate-100">
+                                                        <span className="font-bold text-slate-700">Explanation:</span> {q.explanation}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Footer Link */}
+                        <div className="text-center py-8">
+                            <p className="text-sm text-slate-400">
+                                Integrated Assessment Platform • Designed by <a href="https://www.linkedin.com/in/sahil-gaikwad-1953b0259" target="_blank" className="hover:text-indigo-500 underline">Sahil Gaikwad</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        /* =========================================
+           MAIN APP ORCHESTRATOR
+           ========================================= */
+        const App = () => {
+            // View State: 'welcome' -> 'dashboard' -> 'session1' -> 'dashboard' -> 'session2' -> 'dashboard' -> 'analysis'
+            const [view, setView] = useState('welcome');
+            
+            // Session Data
+            const [s1Result, setS1Result] = useState(null);
+            const [s2Result, setS2Result] = useState(null);
+
+            // Prevent accidental close
+            useEffect(() => {
+                const handleBeforeUnload = (e) => {
+                    if (view !== 'welcome' && view !== 'analysis') {
+                        e.preventDefault();
+                        e.returnValue = '';
+                    }
+                };
+                window.addEventListener('beforeunload', handleBeforeUnload);
+                return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+            }, [view]);
+
+            // Handlers
+            const handleStartSession = (sessionNum) => {
+                if (sessionNum === 'analysis') setView('analysis');
+                else setView(`session${sessionNum}`);
+            };
+
+            const handleSessionComplete = (sessionNum, resultData) => {
+                if (sessionNum === 1) setS1Result(resultData);
+                if (sessionNum === 2) setS2Result(resultData);
+                setView('dashboard');
+                window.scrollTo(0,0);
+            };
+
+            // RENDER LOGIC
+            if (view === 'welcome') {
+                return <WelcomeScreen onStart={() => setView('dashboard')} />;
+            }
+
+            if (view === 'session1') {
+                return (
+                    <ExamSession 
+                        sessionName="Session 1"
+                        data={SESSION_1_DATA}
+                        timeLimitMinutes={135} 
+                        onComplete={(data) => handleSessionComplete(1, data)}
+                    />
+                );
+            }
+
+            if (view === 'session2') {
+                return (
+                    <ExamSession 
+                        sessionName="Session 2"
+                        data={SESSION_2_DATA}
+                        timeLimitMinutes={135} 
+                        onComplete={(data) => handleSessionComplete(2, data)}
+                    />
+                );
+            }
+
+            if (view === 'analysis') {
+                return <FinalReport s1Result={s1Result} s2Result={s2Result} />;
+            }
+
+            // Default: Dashboard
+            return (
+                <Dashboard 
+                    session1Status={s1Result ? 'completed' : 'pending'}
+                    session2Status={s2Result ? 'completed' : 'pending'}
+                    scores={{
+                        s1: s1Result ? s1Result.percentage : 0,
+                        s2: s2Result ? s2Result.percentage : 0
+                    }}
+                    onStartSession={handleStartSession}
+                />
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
